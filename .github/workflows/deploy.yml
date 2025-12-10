@@ -21,7 +21,9 @@ jobs:
       - name: Build Docker image
         run: |
           IMAGE=ghcr.io/ami-2026/ami-backend:latest
-          docker build -t "$IMAGE" .
+          docker build \
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            -t "$IMAGE" .
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
       - name: Push Docker image

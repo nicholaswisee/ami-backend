@@ -6,6 +6,10 @@ WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
+# Provide DATABASE_URL for Prisma during build
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
 # Copy full project source
 COPY . .
 
@@ -33,4 +37,3 @@ EXPOSE 6868
 
 # ========= Startup =========
 CMD ["bun", "run", "dist/index.js"]
-
