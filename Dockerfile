@@ -9,6 +9,9 @@ RUN bun install --frozen-lockfile
 # Copy full project source
 COPY . .
 
+# Generate Prisma client inside the image
+RUN bunx prisma generate
+
 # Compile TypeScript → dist (target Bun runtime)
 RUN bun build src/index.ts --outdir dist --target bun
 
@@ -16,11 +19,8 @@ RUN bun build src/index.ts --outdir dist --target bun
 FROM oven/bun:1 AS runtime
 WORKDIR /app
 
-# Copy only what's needed to run + migrations
+# Copy only what's needed to run
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/src ./src
-# COPY --from=build /app/drizzle ./drizzle
-COPY --from=build /app/drizzle.config.* ./
 COPY --from=build /app/package.json /app/bun.lock ./
 COPY --from=build /app/node_modules ./node_modules
 
@@ -32,5 +32,5 @@ ENV LOG_LEVEL=info
 EXPOSE 6868
 
 # ========= Startup =========
-# Auto-run migrations, then start API
-CMD ["bash", "-c", "bunx drizzle-kit push && bun run dist/index.js"]
+CMD ["bun", "run", "dist/index.js"]
+
