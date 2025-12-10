@@ -1,0 +1,30 @@
+services:
+  backend:
+    build: .
+    container_name: ami-backend
+    ports:
+      - "${PORT:-6868}:${PORT:-6868}"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    environment:
+      NODE_ENV: production
+    command: ["bun", "run", "dist/index.js"]
+    restart: always
+
+  db:
+    image: postgres:16
+    container_name: ami-db
+    restart: always
+    environment:
+      POSTGRES_USER: ami
+      POSTGRES_PASSWORD: sopankanAthillaAMI2026
+      POSTGRES_DB: ami2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

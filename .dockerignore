@@ -1,0 +1,16 @@
+# === Docker files (tidak perlu dikopi ke container runtime) ===
+Dockerfile
+docker-compose.yml
+docker-compose.dev.yml
+docker-compose.prod.yml
+
+# === Build cache / output ===
+dist/
+tmp/
+cache/
+coverage/
+build/
+
+# === Include rules ===
+!.gitignore
+!.dockerignore
