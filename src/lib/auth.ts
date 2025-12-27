@@ -1,12 +1,14 @@
 import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
-import prisma from "@/db/index";
+import db from "@/db/index";
+import * as schema from "@/db/schema";
 import env from "@/env";
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, {
-    provider: "postgresql",
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema,
   }),
   // Allow requests from the frontend development server
   trustedOrigins: [env.FRONTEND_URL || "http://localhost:4141"],

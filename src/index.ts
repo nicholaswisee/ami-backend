@@ -1,22 +1,27 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { env } from "./env";
+import { auth } from "./lib/auth";
 import type { AuthType } from "./lib/auth";
-import auth from "@/routes/auth";
 
 const app = new Hono<{ Variables: AuthType }>({
   strict: false,
 });
 
-const routes = [auth] as const;
+app.use(
+  "*",
+  cors({
+    origin: env.FRONTEND_URL || "http://localhost:4141",
+    credentials: true,
+  }),
+);
 
 app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
-routes.forEach((route) => {
-  app.basePath("/api").route("/", route);
-});
+app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
 serve(
   {
