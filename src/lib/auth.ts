@@ -4,6 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "@/db/index";
 import * as schema from "@/db/schema";
 import env from "@/env";
+import { parseOrigins } from "@/env";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -11,7 +12,11 @@ export const auth = betterAuth({
     schema,
   }),
   // Allow requests from the frontend development server
-  trustedOrigins: [env.FRONTEND_URL || "http://localhost:4141"],
+  trustedOrigins: (() => {
+    const FrontendOrigins = parseOrigins(env.FRONTEND_URLS);
+    if (env.NODE_ENV === "production") return FrontendOrigins;
+    return FrontendOrigins.length ? FrontendOrigins : ["*"];
+  })(),
   emailAndPassword: {
     enabled: true,
   },

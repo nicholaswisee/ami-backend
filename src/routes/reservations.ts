@@ -25,7 +25,7 @@ const createReservationSchema = z
     contactRegion: z.string().trim().min(1),
     wantsTalkshow: z.boolean(),
     talkshowExpectation: z.string().trim().optional(),
-    sessionCode: z.enum(["1", "2"]),
+    sessionCode: z.enum(["1", "2"]).optional(),
     participants: z.array(participantSchema).min(1),
   })
   .superRefine((value, ctx) => {
@@ -34,6 +34,13 @@ const createReservationSchema = z
         code: "custom",
         path: ["talkshowExpectation"],
         message: "Talkshow expectation is required when wantsTalkshow is true",
+      });
+    }
+    if (value.wantsTalkshow && !value.sessionCode) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["sessionCode"],
+        message: "Session is required when wantsTalkshow is true",
       });
     }
   });
@@ -75,18 +82,22 @@ router.post("/reservations", requireAuth, async (c) => {
 
   try {
     const result = await db.transaction(async (tx) => {
-      const [sessionRow] = await tx
-        .select({
-          id: eventSession.id,
-          code: eventSession.code,
-          name: eventSession.name,
-          description: eventSession.description,
-        })
-        .from(eventSession)
-        .where(eq(eventSession.code, parsed.data.sessionCode))
-        .limit(1);
+      const sessionRow = parsed.data.wantsTalkshow
+        ? (
+            await tx
+              .select({
+                id: eventSession.id,
+                code: eventSession.code,
+                name: eventSession.name,
+                description: eventSession.description,
+              })
+              .from(eventSession)
+              .where(eq(eventSession.code, parsed.data.sessionCode!))
+              .limit(1)
+          )[0]
+        : null;
 
-      if (!sessionRow) {
+      if (parsed.data.wantsTalkshow && !sessionRow) {
         return { error: "SESSION_NOT_FOUND" as const };
       }
 
@@ -98,13 +109,15 @@ router.post("/reservations", requireAuth, async (c) => {
         .values({
           id: reservationId,
           userId: authUserId,
-          eventSessionId: sessionRow.id,
+          eventSessionId: sessionRow?.id ?? null,
           email: parsed.data.email,
           contactFullName: parsed.data.contactFullName,
           contactSchool: parsed.data.contactSchool,
           contactRegion: parsed.data.contactRegion,
           wantsTalkshow: parsed.data.wantsTalkshow,
-          talkshowExpectation: parsed.data.talkshowExpectation?.trim() || null,
+          talkshowExpectation: parsed.data.wantsTalkshow
+            ? parsed.data.talkshowExpectation?.trim() || null
+            : null,
           barcode,
         })
         .returning();
@@ -179,19 +192,38 @@ router.get("/reservations", requireAuth, async (c) => {
       barcode: reservation.barcode,
       status: reservation.status,
       createdAt: reservation.createdAt,
-      session: {
-        id: eventSession.id,
-        code: eventSession.code,
-        name: eventSession.name,
-        description: eventSession.description,
-      },
+      sessionId: eventSession.id,
+      sessionCode: eventSession.code,
+      sessionName: eventSession.name,
+      sessionDescription: eventSession.description,
     })
     .from(reservation)
-    .innerJoin(eventSession, eq(reservation.eventSessionId, eventSession.id))
+    .leftJoin(eventSession, eq(reservation.eventSessionId, eventSession.id))
     .where(eq(reservation.userId, authUserId))
     .orderBy(desc(reservation.createdAt));
 
-  return c.json({ reservations: rows });
+  const reservations = rows.map((row) => ({
+    id: row.id,
+    email: row.email,
+    contactFullName: row.contactFullName,
+    contactSchool: row.contactSchool,
+    contactRegion: row.contactRegion,
+    wantsTalkshow: row.wantsTalkshow,
+    talkshowExpectation: row.talkshowExpectation,
+    barcode: row.barcode,
+    status: row.status,
+    createdAt: row.createdAt,
+    session: row.sessionId
+      ? {
+          id: row.sessionId,
+          code: row.sessionCode!,
+          name: row.sessionName!,
+          description: row.sessionDescription ?? null,
+        }
+      : null,
+  }));
+
+  return c.json({ reservations });
 });
 
 router.get("/reservations/:id", requireAuth, async (c) => {
@@ -212,15 +244,13 @@ router.get("/reservations/:id", requireAuth, async (c) => {
       barcode: reservation.barcode,
       status: reservation.status,
       createdAt: reservation.createdAt,
-      session: {
-        id: eventSession.id,
-        code: eventSession.code,
-        name: eventSession.name,
-        description: eventSession.description,
-      },
+      sessionId: eventSession.id,
+      sessionCode: eventSession.code,
+      sessionName: eventSession.name,
+      sessionDescription: eventSession.description,
     })
     .from(reservation)
-    .innerJoin(eventSession, eq(reservation.eventSessionId, eventSession.id))
+    .leftJoin(eventSession, eq(reservation.eventSessionId, eventSession.id))
     .where(and(eq(reservation.id, id), eq(reservation.userId, authUserId)))
     .limit(1);
 
@@ -237,7 +267,29 @@ router.get("/reservations/:id", requireAuth, async (c) => {
     .where(eq(reservationParticipant.reservationId, row.id))
     .orderBy(desc(reservationParticipant.createdAt));
 
-  return c.json({ reservation: { ...row, participants } });
+  return c.json({
+    reservation: {
+      id: row.id,
+      email: row.email,
+      contactFullName: row.contactFullName,
+      contactSchool: row.contactSchool,
+      contactRegion: row.contactRegion,
+      wantsTalkshow: row.wantsTalkshow,
+      talkshowExpectation: row.talkshowExpectation,
+      barcode: row.barcode,
+      status: row.status,
+      createdAt: row.createdAt,
+      session: row.sessionId
+        ? {
+            id: row.sessionId,
+            code: row.sessionCode!,
+            name: row.sessionName!,
+            description: row.sessionDescription ?? null,
+          }
+        : null,
+      participants,
+    },
+  });
 });
 
 export default router;

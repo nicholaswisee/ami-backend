@@ -12,12 +12,12 @@ const DefaultSessions: Array<{
 }> = [
   {
     code: "1",
-    name: "Session 1",
+    name: "Sesi 1",
     description: "Reservasi Tiket ITB DAY AMI 2026 - Session 1",
   },
   {
     code: "2",
-    name: "Session 2",
+    name: "Sesi 2",
     description: "Reservasi Tiket ITB DAY AMI 2026 - Session 2",
   },
 ];

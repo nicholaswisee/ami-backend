@@ -188,7 +188,6 @@ export const reservation = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     eventSessionId: text("eventSessionId")
-      .notNull()
       .references(() => eventSession.id, { onDelete: "restrict" }),
     email: text("email").notNull(),
     contactFullName: text("contactFullName").notNull(),

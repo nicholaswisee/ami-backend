@@ -2,9 +2,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const {
-  PORT = "3000",
+  PORT = "6868",
   NODE_ENV = "development",
-  FRONTEND_URL,
+  FRONTEND_URLS,
   DATABASE_URL,
   BETTER_AUTH_SECRET,
   BETTER_AUTH_URL,
@@ -12,10 +12,18 @@ const {
   GOOGLE_CLIENT_SECRET,
 } = process.env;
 
+export function parseOrigins(...values: Array<string | undefined>) {
+  const items = values
+    .flatMap((v) => (v ? v.split(",") : []))
+    .map((v) => v.trim())
+    .filter(Boolean);
+  return Array.from(new Set(items));
+}
+
 export const env = {
   PORT: Number(PORT),
-  NODE_ENV: NODE_ENV as "development" | "test" | "production",
-  FRONTEND_URL: FRONTEND_URL as string,
+  NODE_ENV: NODE_ENV as "development" | "production",
+  FRONTEND_URLS: FRONTEND_URLS as string,
   DATABASE_URL: DATABASE_URL as string,
   BETTER_AUTH_SECRET: BETTER_AUTH_SECRET as string,
   BETTER_AUTH_URL: BETTER_AUTH_URL as string,

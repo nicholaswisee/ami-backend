@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { logger } from "hono/logger";
 import { env } from "./env";
 import { auth } from "./lib/auth";
 import reservationsRouter from "./routes/reservations";
@@ -11,10 +12,20 @@ const app = new Hono({
   strict: false,
 });
 
+app.use("*", logger());
+
 app.use(
   "*",
   cors({
-    origin: env.FRONTEND_URL || "http://localhost:4141",
+    origin: (origin) => {
+      if (!origin) return null;
+      if (env.NODE_ENV !== "production") return origin;
+      const FrontendUrls = (env.FRONTEND_URLS ?? "").split(",");
+      const AllowedOrigins = new Set(
+        FrontendUrls.map((u) => u.trim()).filter(Boolean),
+      );
+      return AllowedOrigins.has(origin) ? origin : null;
+    },
     credentials: true,
   }),
 );
