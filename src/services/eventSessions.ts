@@ -13,24 +13,32 @@ const DefaultSessions: Array<{
   {
     code: "1",
     name: "Sesi 1",
-    description: "Reservasi Tiket ITB DAY AMI 2026 - Session 1",
+    description: "Reservasi Tiket ITB DAY AMI 2026 - Sesi 1",
   },
   {
     code: "2",
     name: "Sesi 2",
-    description: "Reservasi Tiket ITB DAY AMI 2026 - Session 2",
+    description: "Reservasi Tiket ITB DAY AMI 2026 - Sesi 2",
   },
 ];
 
 export async function ensureDefaultEventSessions(database: typeof db) {
   for (const session of DefaultSessions) {
     const existing = await database
-      .select({ id: eventSession.id })
+      .select({ id: eventSession.id, name: eventSession.name })
       .from(eventSession)
       .where(eq(eventSession.code, session.code))
       .limit(1);
 
-    if (existing.length > 0) continue;
+    if (existing.length > 0) {
+      if (existing[0].name !== session.name) {
+        await database
+          .update(eventSession)
+          .set({ name: session.name })
+          .where(eq(eventSession.id, existing[0].id));
+      }
+      continue;
+    }
 
     await database.insert(eventSession).values({
       id: randomUUID(),
