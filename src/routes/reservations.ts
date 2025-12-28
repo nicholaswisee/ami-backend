@@ -13,7 +13,7 @@ const router = new Hono<{ Variables: AuthVariables }>({
 
 const participantSchema = z.object({
   fullName: z.string().trim().min(1),
-  school: z.string().trim().min(1),
+  school: z.string().trim().optional(),
   region: z.string().trim().min(1),
 });
 
@@ -129,7 +129,7 @@ router.post("/reservations", requireAuth, async (c) => {
             id: randomUUID(),
             reservationId: createdReservation.id,
             fullName: p.fullName,
-            school: p.school,
+            school: p.school?.trim() || "",
             region: p.region,
           })),
         )
