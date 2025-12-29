@@ -51,7 +51,8 @@ type DbSelectLike = {
 
 async function generateUniqueBarcode(executor: DbSelectLike = db) {
   for (let attempt = 0; attempt < 6; attempt++) {
-    const candidate = `AMI26-${randomBytes(6)
+    const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, "");
+    const candidate = `AMI26-${datePart}-${randomBytes(6)
       .toString("hex")
       .toUpperCase()}`;
 
@@ -166,8 +167,7 @@ router.post("/reservations", requireAuth, async (c) => {
       return c.json(
         {
           error: "CONFLICT",
-          message:
-            "Email already reserved for this session or barcode collision.",
+          message: "Barcode collision. Please try again.",
         },
         409,
       );

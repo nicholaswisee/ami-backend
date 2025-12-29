@@ -206,10 +206,6 @@ export const reservation = pgTable(
   },
   (table) => [
     uniqueIndex("Reservation_barcode_key").on(table.barcode),
-    uniqueIndex("Reservation_email_eventSession_key").on(
-      table.email,
-      table.eventSessionId
-    ),
     index("Reservation_userId_idx").on(table.userId),
   ]
 );
