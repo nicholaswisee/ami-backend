@@ -43,7 +43,8 @@ function verifyPasswordHash(hash: string, password: string) {
   return timingSafeEqual(expected, actual);
 }
 
-export const authBasePath = "/auth";
+export const authBasePath =
+  env.NODE_ENV === "production" ? "/api/auth" : "/auth";
 
 export function getAuthConfig(): AuthConfig {
   const frontendOrigins = parseOrigins(env.FRONTEND_URLS);
