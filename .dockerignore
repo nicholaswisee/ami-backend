@@ -5,11 +5,15 @@ docker-compose.dev.yml
 docker-compose.prod.yml
 
 # === Build cache / output ===
-dist/
 tmp/
 cache/
 coverage/
-build/
+
+# === Development files ===
+.git/
+.github/
+README.md
+*.md
 
 # === Include rules ===
 !.gitignore
