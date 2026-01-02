@@ -1,9 +1,10 @@
 import { serve } from "@hono/node-server";
+import { authHandler, initAuthConfig } from "@hono/auth-js";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { env } from "./env";
-import { auth } from "./lib/auth";
+import { getAuthConfig } from "./lib/auth";
 import reservationsRouter from "./routes/reservations";
 import scannerRouter from "./routes/scanner";
 import sessionsRouter from "./routes/sessions";
@@ -46,27 +47,17 @@ app.use(
 
 console.log("[SERVER] CORS middleware configured");
 
+app.use("*", initAuthConfig(() => getAuthConfig()));
+
 app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
 console.log("[SERVER] Registering routes...");
 
-// Better-auth handler - use app.all() instead of app.on()
-app.all("/auth/*", async (c) => {
-  console.log(`[AUTH] Headers:`, Object.fromEntries(c.req.raw.headers));
+app.use("/auth/*", authHandler());
 
-  try {
-    const response = await auth.handler(c.req.raw);
-    console.log(`[AUTH] Response status:`, response.status);
-    return response;
-  } catch (error) {
-    console.error(`[AUTH] Error:`, error);
-    throw error;
-  }
-});
-
-console.log("[SERVER] ✓ Auth routes registered at /auth/*");
+console.log("[SERVER] Auth routes registered at /auth/*");
 
 app.route("/", sessionsRouter);
 app.route("/", reservationsRouter);
@@ -79,7 +70,7 @@ app.all("*", (c) => {
   return c.text(`Route not found: ${c.req.method} ${c.req.path}`, 404);
 });
 
-console.log("[SERVER] ✓ All routes registered");
+console.log("[SERVER] All routes registered");
 
 console.log("[SERVER] Starting HTTP server...");
 
@@ -90,7 +81,7 @@ serve(
   },
   (info) => {
     console.log(
-      `[SERVER] ✓ Server is running on http://localhost:${info.port}`
+      `[SERVER] Server is running on http://localhost:${info.port}`
     );
     console.log(`[SERVER] Environment: ${env.NODE_ENV}`);
     console.log(`[SERVER] Auth endpoints available at: /auth/*`);

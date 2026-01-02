@@ -5,6 +5,7 @@ import {
   integer,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -37,13 +38,17 @@ export const user = pgTable(
     name: text("name").notNull(),
     email: text("email").notNull(),
     role: userRoleEnum("role").notNull().default("USER"),
-    emailVerified: boolean("emailVerified").notNull().default(false),
+    emailVerified: timestamp("emailVerified", {
+      precision: 3,
+      withTimezone: true,
+    }),
     image: text("image"),
     createdAt: timestamp("createdAt", { precision: 3, withTimezone: true })
       .notNull()
       .defaultNow(),
     updatedAt: timestamp("updatedAt", { precision: 3, withTimezone: true })
-      .notNull(),
+      .notNull()
+      .defaultNow(),
   },
   (table) => [uniqueIndex("user_email_key").on(table.email)]
 );
@@ -116,6 +121,51 @@ export const verification = pgTable(
       .notNull(),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)]
+);
+
+// Auth.js tables (separate from legacy better-auth tables)
+export const authAccount = pgTable(
+  "auth_account",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (table) => [
+    primaryKey({ columns: [table.provider, table.providerAccountId] }),
+    index("auth_account_userId_idx").on(table.userId),
+  ]
+);
+
+export const authSession = pgTable("auth_session", {
+  sessionToken: text("sessionToken").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  expires: timestamp("expires", { precision: 3, withTimezone: true }).notNull(),
+});
+
+export const authVerificationToken = pgTable(
+  "auth_verification_token",
+  {
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: timestamp("expires", { precision: 3, withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.identifier, table.token] }),
+    index("auth_verification_token_identifier_idx").on(table.identifier),
+  ]
 );
 
 export const order = pgTable("Order", {
