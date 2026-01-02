@@ -31,4 +31,19 @@ export const env = {
   GOOGLE_CLIENT_SECRET: GOOGLE_CLIENT_SECRET as string,
 } as const;
 
+console.log("[ENV] Loaded environment variables:");
+console.log("[ENV] PORT:", env.PORT);
+console.log("[ENV] NODE_ENV:", env.NODE_ENV);
+console.log("[ENV] FRONTEND_URLS:", env.FRONTEND_URLS);
+console.log("[ENV] DATABASE_URL:", env.DATABASE_URL ? "✓ Set" : "✗ Missing");
+console.log(
+  "[ENV] BETTER_AUTH_SECRET:",
+  env.BETTER_AUTH_SECRET ? "✓ Set" : "✗ Missing"
+);
+console.log("[ENV] BETTER_AUTH_URL:", env.BETTER_AUTH_URL);
+console.log(
+  "[ENV] GOOGLE_CLIENT_ID:",
+  env.GOOGLE_CLIENT_ID ? "✓ Set" : "✗ Missing"
+);
+
 export default env;

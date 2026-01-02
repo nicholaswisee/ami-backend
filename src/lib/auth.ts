@@ -1,23 +1,29 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
-import db from "@/db/index";
-import * as schema from "@/db/schema";
-import env from "@/env";
-import { parseOrigins } from "@/env";
+import db from "../db/index";
+import * as schema from "../db/schema";
+import env from "../env";
+import { parseOrigins } from "../env";
+console.log("[AUTH] Initializing better-auth...");
+console.log("[AUTH] baseURL:", env.BETTER_AUTH_URL);
 
+const FrontendOrigins = parseOrigins(env.FRONTEND_URLS);
+const trustedOrigins =
+  env.NODE_ENV === "production"
+    ? FrontendOrigins
+    : FrontendOrigins.length
+    ? FrontendOrigins
+    : ["*"];
+
+console.log("[AUTH] trustedOrigins:", trustedOrigins);
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
   }),
   baseURL: env.BETTER_AUTH_URL,
-  // Allow requests from the frontend development server
-  trustedOrigins: (() => {
-    const FrontendOrigins = parseOrigins(env.FRONTEND_URLS);
-    if (env.NODE_ENV === "production") return FrontendOrigins;
-    return FrontendOrigins.length ? FrontendOrigins : ["*"];
-  })(),
+  trustedOrigins,
   emailAndPassword: {
     enabled: true,
   },
@@ -28,6 +34,8 @@ export const auth = betterAuth({
     },
   },
 });
+
+console.log("[AUTH] ✓ Better-auth initialized successfully");
 
 export type AuthType = {
   user: typeof auth.$Infer.Session.user | null;

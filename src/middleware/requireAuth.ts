@@ -1,6 +1,6 @@
 import { APIError } from "better-call";
 import type { MiddlewareHandler } from "hono";
-import { auth } from "@/lib/auth";
+import { auth } from "../lib/auth";
 
 export type SessionData = Awaited<ReturnType<typeof auth.api.getSession>>;
 
