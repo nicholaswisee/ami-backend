@@ -47,7 +47,10 @@ app.use(
 
 console.log("[SERVER] CORS middleware configured");
 
-app.use("*", initAuthConfig(() => getAuthConfig()));
+app.use(
+  "*",
+  initAuthConfig(() => getAuthConfig())
+);
 
 app.get("/", (c) => {
   return c.text("Hello Hono!");
@@ -59,9 +62,9 @@ app.use(`${authBasePath}/*`, authHandler());
 
 console.log("[SERVER] Auth routes registered at /auth/*");
 
-app.route("/", sessionsRouter);
-app.route("/", reservationsRouter);
-app.route("/", scannerRouter);
+app.route("/api", sessionsRouter);
+app.route("/api", reservationsRouter);
+app.route("/api", scannerRouter);
 
 // Debug: catch all unmatched routes
 app.all("*", (c) => {
@@ -80,9 +83,7 @@ serve(
     port: env.PORT,
   },
   (info) => {
-    console.log(
-      `[SERVER] Server is running on http://localhost:${info.port}`
-    );
+    console.log(`[SERVER] Server is running on http://localhost:${info.port}`);
     console.log(`[SERVER] Environment: ${env.NODE_ENV}`);
     console.log(`[SERVER] Auth endpoints available at: /auth/*`);
   }
