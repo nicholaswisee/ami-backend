@@ -4,7 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { env } from "./env";
-import { getAuthConfig } from "./lib/auth";
+import { authBasePath, getAuthConfig } from "./lib/auth";
 import reservationsRouter from "./routes/reservations";
 import scannerRouter from "./routes/scanner";
 import sessionsRouter from "./routes/sessions";
@@ -55,7 +55,7 @@ app.get("/", (c) => {
 
 console.log("[SERVER] Registering routes...");
 
-app.use("/auth/*", authHandler());
+app.use(`${authBasePath}/*`, authHandler());
 
 console.log("[SERVER] Auth routes registered at /auth/*");
 

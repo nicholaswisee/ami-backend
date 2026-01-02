@@ -43,6 +43,9 @@ function verifyPasswordHash(hash: string, password: string) {
   return timingSafeEqual(expected, actual);
 }
 
+export const authBasePath =
+  env.NODE_ENV === "production" ? "/api/auth" : "/auth";
+
 export function getAuthConfig(): AuthConfig {
   const frontendOrigins = parseOrigins(env.FRONTEND_URLS);
   const frontendBase =
@@ -51,7 +54,7 @@ export function getAuthConfig(): AuthConfig {
       : "http://localhost:4141";
   return {
     secret: env.AUTH_SECRET,
-    basePath: "/auth",
+    basePath: authBasePath,
     trustHost: true,
     session: { strategy: "database" },
     adapter: DrizzleAdapter(db, {
