@@ -22,22 +22,22 @@ app.use(
       if (env.NODE_ENV !== "production") return origin;
       const FrontendUrls = (env.FRONTEND_URLS ?? "").split(",");
       const AllowedOrigins = new Set(
-        FrontendUrls.map((u) => u.trim()).filter(Boolean),
+        FrontendUrls.map((u) => u.trim()).filter(Boolean)
       );
       return AllowedOrigins.has(origin) ? origin : null;
     },
     credentials: true,
-  }),
+  })
 );
 
 app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
-app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
-app.route("/api", sessionsRouter);
-app.route("/api", reservationsRouter);
-app.route("/api", scannerRouter);
+app.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw));
+app.route("/", sessionsRouter);
+app.route("/", reservationsRouter);
+app.route("/", scannerRouter);
 
 serve(
   {
