@@ -52,9 +52,8 @@ app.get("/", (c) => {
 
 console.log("[SERVER] Registering routes...");
 
-app.on(["POST", "GET"], "/auth/*", async (c) => {
-  console.log(`[AUTH] ${c.req.method} ${c.req.url}`);
-  console.log(`[AUTH] Path:`, c.req.path);
+// Better-auth handler - use app.all() instead of app.on()
+app.all("/auth/*", async (c) => {
   console.log(`[AUTH] Headers:`, Object.fromEntries(c.req.raw.headers));
 
   try {
@@ -72,6 +71,13 @@ console.log("[SERVER] ✓ Auth routes registered at /auth/*");
 app.route("/", sessionsRouter);
 app.route("/", reservationsRouter);
 app.route("/", scannerRouter);
+
+// Debug: catch all unmatched routes
+app.all("*", (c) => {
+  console.log(`[DEBUG] Unmatched route: ${c.req.method} ${c.req.path}`);
+  console.log(`[DEBUG] Full URL: ${c.req.url}`);
+  return c.text(`Route not found: ${c.req.method} ${c.req.path}`, 404);
+});
 
 console.log("[SERVER] ✓ All routes registered");
 
