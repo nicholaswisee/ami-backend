@@ -6,7 +6,7 @@ import * as schema from "../db/schema";
 import env from "../env";
 import { parseOrigins } from "../env";
 console.log("[AUTH] Initializing better-auth...");
-console.log("[AUTH] baseURL:", env.BETTER_AUTH_URL);
+console.log("[AUTH] baseURL:", env.BETTER_AUTH_URL + "/auth");
 
 const FrontendOrigins = parseOrigins(env.FRONTEND_URLS);
 const trustedOrigins =
@@ -22,7 +22,7 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
-  baseURL: env.BETTER_AUTH_URL,
+  baseURL: env.BETTER_AUTH_URL + "/auth",
   trustedOrigins,
   emailAndPassword: {
     enabled: true,
