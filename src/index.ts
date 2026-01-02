@@ -52,10 +52,19 @@ app.get("/", (c) => {
 
 console.log("[SERVER] Registering routes...");
 
-app.on(["POST", "GET"], "/auth/*", (c) => {
+app.on(["POST", "GET"], "/auth/*", async (c) => {
   console.log(`[AUTH] ${c.req.method} ${c.req.url}`);
+  console.log(`[AUTH] Path:`, c.req.path);
   console.log(`[AUTH] Headers:`, Object.fromEntries(c.req.raw.headers));
-  return auth.handler(c.req.raw);
+
+  try {
+    const response = await auth.handler(c.req.raw);
+    console.log(`[AUTH] Response status:`, response.status);
+    return response;
+  } catch (error) {
+    console.error(`[AUTH] Error:`, error);
+    throw error;
+  }
 });
 
 console.log("[SERVER] ✓ Auth routes registered at /auth/*");
