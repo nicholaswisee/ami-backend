@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copy dependency descriptors first for layer caching
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile --production
+RUN bun install --frozen-lockfile
 
 # Provide DATABASE_URL for Prisma during build
 ARG DATABASE_URL
