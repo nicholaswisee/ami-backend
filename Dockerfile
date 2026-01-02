@@ -17,13 +17,15 @@ COPY . .
 FROM oven/bun:1 AS runtime
 WORKDIR /app
 
-# Copy package files and install production dependencies
+# Copy package files
 COPY --from=build /app/package.json /app/bun.lock ./
-COPY --from=build /app/node_modules ./node_modules
+
+# Install all dependencies (including dev for drizzle-kit)
+RUN bun install --frozen-lockfile
 
 # Copy source code (including lib, routes, middleware, services, db)
 COPY --from=build /app/src ./src
-COPY --from=build /app/drizzle.config.* ./
+COPY --from=build /app/drizzle.config.ts ./
 COPY --from=build /app/tsconfig.json ./
 
 # ========= Environment =========

@@ -11,6 +11,7 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
+  baseURL: env.BETTER_AUTH_URL,
   // Allow requests from the frontend development server
   trustedOrigins: (() => {
     const FrontendOrigins = parseOrigins(env.FRONTEND_URLS);

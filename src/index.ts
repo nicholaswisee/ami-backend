@@ -34,7 +34,10 @@ app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
-app.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw));
+app.on(["POST", "GET"], "/auth/*", (c) => {
+  console.log(`[AUTH] ${c.req.method} ${c.req.url}`);
+  return auth.handler(c.req.raw);
+});
 app.route("/", sessionsRouter);
 app.route("/", reservationsRouter);
 app.route("/", scannerRouter);
