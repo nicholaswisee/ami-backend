@@ -24,7 +24,6 @@ COPY --from=build /app/node_modules ./node_modules
 # Copy source code (including lib, routes, middleware, services, db)
 COPY --from=build /app/src ./src
 COPY --from=build /app/drizzle.config.* ./
-COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/tsconfig.json ./
 
 # ========= Environment =========
