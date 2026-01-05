@@ -53,6 +53,13 @@ export const user = pgTable(
   (table) => [uniqueIndex("user_email_key").on(table.email)]
 );
 
+export const scannerAllowlist = pgTable("ScannerAllowlist", {
+  email: text("email").primaryKey(),
+  createdAt: timestamp("createdAt", { precision: 3, withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export const session = pgTable(
   "session",
   {

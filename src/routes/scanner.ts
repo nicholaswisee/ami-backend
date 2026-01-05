@@ -2,9 +2,9 @@ import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import db from "@/db";
-import { reservation } from "@/db/schema";
+import { reservation, user } from "@/db/schema";
 import { requireAuth, type AuthVariables } from "@/middleware/requireAuth";
-import { requireScanner } from "@/middleware/requireScanner";
+import { hasScannerAccess, requireScanner } from "@/middleware/requireScanner";
 import { sql } from "drizzle-orm";
 
 const router = new Hono<{ Variables: AuthVariables }>({
@@ -13,6 +13,19 @@ const router = new Hono<{ Variables: AuthVariables }>({
 
 const scanSchema = z.object({
   barcode: z.string().trim().min(1),
+});
+
+router.get("/scanner/access", requireAuth, async (c) => {
+  const authUserId = c.get("authUserId");
+  const [row] = await db
+    .select({ email: user.email })
+    .from(user)
+    .where(eq(user.id, authUserId))
+    .limit(1);
+
+  if (!row) return c.json({ error: "UNAUTHORIZED" }, 401);
+  const allowed = await hasScannerAccess(row.email);
+  return c.json({ allowed });
 });
 
 router.post("/scanner/scan", requireAuth, requireScanner, async (c) => {

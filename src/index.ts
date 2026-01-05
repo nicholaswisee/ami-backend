@@ -62,9 +62,10 @@ app.use(`${authBasePath}/*`, authHandler());
 
 console.log("[SERVER] Auth routes registered at /auth/*");
 
-app.route("/api", sessionsRouter);
-app.route("/api", reservationsRouter);
-app.route("/api", scannerRouter);
+const prefix = env.NODE_ENV === "production" ? "/api" : "/";
+app.route(prefix, sessionsRouter);
+app.route(prefix, reservationsRouter);
+app.route(prefix, scannerRouter);
 
 // Debug: catch all unmatched routes
 app.all("*", (c) => {
